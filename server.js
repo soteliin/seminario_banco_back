@@ -8,14 +8,11 @@ const bcrypt = require('bcrypt'); // Import bcrypt for password hashing
 const app = express();
 const port = 5000;
 
-// Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
-// Set up multer for handling form-data
 const upload = multer();
 
-// PostgreSQL connection setup
 const pool = new Pool({
     user: 'postgres',
     host: '192.168.100.17',
@@ -49,7 +46,6 @@ app.post('/register', upload.none(), async (req, res) => {
     }
 });
 
-// Route to login a user
 app.post('/login', upload.none(), async (req, res) => {
     console.log('POST /login');
 
@@ -88,7 +84,6 @@ app.post('/login', upload.none(), async (req, res) => {
     }
 });
 
-// Route to get all records from estado_civil
 app.get('/estado-civil', async (req, res) => {
     console.log('GET /estado-civil');
     try {
@@ -100,7 +95,6 @@ app.get('/estado-civil', async (req, res) => {
     }
 });
 
-// Route to get all records from estado_civil
 app.get('/casas', async (req, res) => {
     console.log('GET /casas');
     try {
