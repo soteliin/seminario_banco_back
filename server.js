@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const multer = require('multer');
 const { Pool } = require('pg');
-const bcrypt = require('bcrypt'); 
+const bcrypt = require('bcrypt');
 
 const app = express();
 const port = 5000;
@@ -148,7 +148,7 @@ app.get('/get-user', async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        res.status(200).json(result.rows[0]); 
+        res.status(200).json(result.rows[0]);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error al obtener los datos del usuario' });
@@ -167,7 +167,7 @@ app.get('/get-user-sueldo', async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        res.status(200).json(result.rows[0]); 
+        res.status(200).json(result.rows[0]);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error al obtener el sueldo del usuario' });
@@ -177,20 +177,20 @@ app.get('/get-user-sueldo', async (req, res) => {
 
 app.put('/edit-profile', async (req, res) => {
     console.log('PUT /edit-profile');
-  
+
     const {
-      nombre_completo,
-      rfc,
-      edad,
-      telefono,
-      correo,
-      sueldo,
-      id_estado_civil
+        nombre_completo,
+        rfc,
+        edad,
+        telefono,
+        correo,
+        sueldo,
+        id_estado_civil
     } = req.body;
-  
+
     try {
-      const result = await pool.query(
-        `UPDATE segundop.tr_cliente
+        const result = await pool.query(
+            `UPDATE segundop.tr_cliente
          SET 
            nombre_completo = COALESCE($1, nombre_completo),
            rfc = COALESCE($2, rfc),
@@ -200,21 +200,21 @@ app.put('/edit-profile', async (req, res) => {
            id_estado_civil = COALESCE($6, id_estado_civil)
          WHERE correo = $7
          RETURNING *`,
-        [nombre_completo, rfc, edad, telefono, sueldo, id_estado_civil, correo]
-      );
-  
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-  
-      res.status(200).json({ message: 'User updated successfully', user: result.rows[0] });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Error updating the user' });
-    }
-  });
+            [nombre_completo, rfc, edad, telefono, sueldo, id_estado_civil, correo]
+        );
 
-  app.get('/get-house', async (req, res) => {
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.status(200).json({ message: 'User updated successfully', user: result.rows[0] });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error updating the user' });
+    }
+});
+
+app.get('/get-house', async (req, res) => {
     console.log('GET /get-house');
 
     const { id_casa } = req.query;
@@ -226,6 +226,40 @@ app.put('/edit-profile', async (req, res) => {
         res.status(500).json({ error: 'Error al obtener los datos de la casa' });
     }
 });
+
+app.post('/add-cotizacion', upload.none(), async (req, res) => {
+    console.log('POST /add-cotizacion');
+
+    try {
+        const {
+            id_casa,
+            id_tipo_prestamo,
+            id_amortizacion,
+            id_plazo,
+            correo_cliente,
+        } = req.body;
+
+        if (!id_casa || !id_tipo_prestamo || !id_amortizacion || !id_plazo || !correo_cliente) {
+            return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+        }
+
+        const result = await pool.query(
+            `INSERT INTO segundop.tr_cotizacion (
+                id_casa, id_tipo_prestamo, id_amortizacion, id_plazo, correo_cliente
+            ) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+            [id_casa, id_tipo_prestamo, id_amortizacion, id_plazo, correo_cliente]
+        );
+
+        res.status(201).json({
+            message: 'Cotización añadida exitosamente',
+            cotizacion: result.rows[0],
+        });
+    } catch (err) {
+        console.error('Error inserting cotización:', err);
+        res.status(500).json({ error: 'Error al añadir la cotización' });
+    }
+});
+
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });
