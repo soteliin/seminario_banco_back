@@ -155,6 +155,25 @@ app.get('/get-user', async (req, res) => {
     }
 });
 
+app.get('/get-user-sueldo', async (req, res) => {
+    console.log('GET /get-user-sueldo');
+
+    const { email } = req.query;
+
+    try {
+        const result = await pool.query('SELECT sueldo FROM segundop.tr_cliente WHERE correo = $1', [email]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.status(200).json(result.rows[0]); 
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener el sueldo del usuario' });
+    }
+});
+
 
 app.put('/edit-profile', async (req, res) => {
     console.log('PUT /edit-profile');
