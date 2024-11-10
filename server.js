@@ -106,6 +106,56 @@ app.get('/casas', async (req, res) => {
     }
 });
 
+app.get('/get-user', async (req, res) => {
+    console.log('GET /get-user');
+    try {
+        const result = await pool.query('SELECT * FROM segundop.tr_cliente');
+        res.status(200).json(result.rows); // Return the records as JSON
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener los datos del usuario' });
+    }
+});
+
+app.put('/edit-profile', async (req, res) => {
+    console.log('PUT /edit-profile');
+  
+    const {
+      nombre_completo,
+      rfc,
+      edad,
+      telefono,
+      correo,
+      sueldo,
+      id_estado_civil
+    } = req.body;
+  
+    try {
+      const result = await pool.query(
+        `UPDATE segundop.tr_cliente
+         SET 
+           nombre_completo = COALESCE($1, nombre_completo),
+           rfc = COALESCE($2, rfc),
+           edad = COALESCE($3, edad),
+           telefono = COALESCE($4, telefono),
+           sueldo = COALESCE($5, sueldo),
+           id_estado_civil = COALESCE($6, id_estado_civil)
+         WHERE correo = $7
+         RETURNING *`,
+        [nombre_completo, rfc, edad, telefono, sueldo, id_estado_civil, correo]
+      );
+  
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+  
+      res.status(200).json({ message: 'User updated successfully', user: result.rows[0] });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Error updating the user' });
+    }
+  });
+
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });
