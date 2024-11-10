@@ -112,6 +112,19 @@ app.get('/cat-prestamistas', async (req, res) => {
     }
 });
 
+app.get('/cat-plazos', async (req, res) => {
+    console.log('GET /cat-plazos');
+
+    const { id_amortizacion } = req.query;
+    try {
+        const result = await pool.query('SELECT * FROM segundop.tc_plazo WHERE id_amortizacion = $1', [id_amortizacion]);
+        res.status(200).json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener los plazos del banco' });
+    }
+});
+
 app.get('/casas', async (req, res) => {
     console.log('GET /casas');
     try {
