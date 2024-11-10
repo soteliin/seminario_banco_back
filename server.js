@@ -90,6 +90,28 @@ app.get('/estado-civil', async (req, res) => {
     }
 });
 
+app.get('/cat-tipos-prest', async (req, res) => {
+    console.log('GET /cat-tipos-prest');
+    try {
+        const result = await pool.query('SELECT * FROM segundop.tc_tipo_prestamo');
+        res.status(200).json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener los tipos de préstamos' });
+    }
+});
+
+app.get('/cat-prestamistas', async (req, res) => {
+    console.log('GET /cat-prestamistas');
+    try {
+        const result = await pool.query('SELECT * FROM segundop.tc_amortizacion');
+        res.status(200).json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener los prestamistas' });
+    }
+});
+
 app.get('/casas', async (req, res) => {
     console.log('GET /casas');
     try {
