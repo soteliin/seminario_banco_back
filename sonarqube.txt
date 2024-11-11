@@ -1,0 +1,1 @@
+sonar-scanner.bat -D"sonar.projectKey=seminario-2p-back" -D"sonar.sources=." -D"sonar.host.url=http://localhost:9000" -D"sonar.token=sqp_efa22f071ccd228566bac118cb764b00bde2901a"
