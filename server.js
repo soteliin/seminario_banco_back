@@ -149,6 +149,55 @@ app.put('/edit-profile', async (req, res) => {
     }
 });
 
+app.put('/edit-profile', async (req, res) => {
+    console.log('PUT /edit-profile');
+
+    const {
+        nombre_completo,
+        rfc,
+        edad,
+        telefono,
+        correo,
+        sueldo,
+        id_estado_civil
+    } = req.body;
+
+    // Ensure the 'correo' field is provided because it's required to identify the user
+    if (!correo) {
+        return res.status(400).json({ error: 'The "correo" field is required to update the profile' });
+    }
+
+    try {
+        const result = await pool.query(
+            `UPDATE segundop.tr_cliente
+             SET 
+               nombre_completo = COALESCE($1, nombre_completo),
+               rfc = COALESCE($2, rfc),
+               edad = COALESCE($3, edad),
+               telefono = COALESCE($4, telefono),
+               sueldo = COALESCE($5, sueldo),
+               id_estado_civil = COALESCE($6, id_estado_civil)
+             WHERE correo = $7
+             RETURNING *`,
+            [nombre_completo, rfc, edad, telefono, sueldo, id_estado_civil, correo]
+        );
+
+        // If no rows are returned, the user was not found
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Return success message and the updated user data
+        res.status(200).json({
+            message: 'User updated successfully',
+            user: result.rows[0]
+        });
+    } catch (err) {
+        console.error('Error updating the user:', err);
+        res.status(500).json({ error: 'Error updating the user' });
+    }
+});
+
 app.get('/estado-civil', async (req, res) => {
     console.log('GET /estado-civil');
     try {
@@ -275,7 +324,7 @@ app.get('/get-amortizacion-byid', async (req, res) => {
 
     const { id_amortizacion } = req.query;
     try {
-        const result = await pool.query('SELECT prestamista FROM segundop.tc_amortizacion WHERE id_amortizacion = $1', [id_amortizacion]);
+        const result = await pool.query('SELECT * FROM segundop.tc_amortizacion WHERE id_amortizacion = $1', [id_amortizacion]);
         res.status(200).json(result.rows);
     } catch (err) {
         console.error(err);
@@ -288,11 +337,24 @@ app.get('/get-plazo-byid', async (req, res) => {
 
     const { id_plazo } = req.query;
     try {
-        const result = await pool.query('SELECT plazo FROM segundop.tc_plazo WHERE id_plazo = $1', [id_plazo]);
+        const result = await pool.query('SELECT * FROM segundop.tc_plazo WHERE id_plazo = $1', [id_plazo]);
         res.status(200).json(result.rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error al obtener los datos del plazo' });
+    }
+});
+
+app.get('/get-coti-byid', async (req, res) => {
+    console.log('GET /get-coti-byid');
+
+    const { id_cotizacion } = req.query;
+    try {
+        const result = await pool.query('SELECT * FROM segundop.tr_cotizacion WHERE id_cotizacion = $1', [id_cotizacion]);
+        res.status(200).json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener los datos de la cotización' });
     }
 });
 
@@ -308,6 +370,8 @@ app.get('/get-coti-usr', async (req, res) => {
         res.status(500).json({ error: 'Error al obtener las cotizaciones del usuario' });
     }
 });
+
+
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
