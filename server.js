@@ -15,7 +15,7 @@ const upload = multer();
 
 const pool = new Pool({
     user: 'postgres',
-    host: '172.16.120.117',
+    host: '172.16.129.171',
     database: 'postgres',
     password: 'postgres',
     port: 5432,
@@ -252,6 +252,17 @@ app.get('/casas', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Error al obtener las casas' });
+    }
+});
+
+app.get('/clients', async (req, res) => {
+    console.log('GET /clients');
+    try {
+        const result = await pool.query('SELECT * FROM segundop.tr_cliente');
+        res.status(200).json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener los clientes' });
     }
 });
 
